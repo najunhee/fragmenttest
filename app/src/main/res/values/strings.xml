@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">fragmenttest</string>
+    <string name="home_fragment_label">Home Fragment</string>
+</resources>
