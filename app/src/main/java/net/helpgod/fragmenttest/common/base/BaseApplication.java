@@ -6,7 +6,11 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
+import android.graphics.Point;
 import android.os.Build;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -68,6 +72,12 @@ public class BaseApplication extends Application {
         return appVersion;
     }
 
+
+
+    private static final int LOW_DPI_STATUS_BAR_HEIGHT = 19;
+    private static final int MEDIUM_DPI_STATUS_BAR_HEIGHT = 25;
+    private static final int HIGH_DPI_STATUS_BAR_HEIGHT = 38;
+
     /**
      * putLogLayout
      * @return void
@@ -80,8 +90,18 @@ public class BaseApplication extends Application {
 
                 int another = (int) Math.ceil((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? 24 : 25) * (activity.getResources().getDisplayMetrics().density));
 
-//                float start = -(Jwc.getWindowHeight(activity) - Jwc.getPix(activity, 50));
-                float start = -(Jwc.getWindowHeight(activity) - another);
+                Log.d("Device Density : " + activity.getResources().getDisplayMetrics().density);
+                Log.d("스크린 높이 : " + getScreenHeight(activity));
+                Log.d("네비게이션바 높이 : " + getNavigationBarHeight(activity));
+                Log.d("상태바 높이 : " + getStatusBarSizeOnCreate(activity));
+                Log.d("액션바 높이 : " + getActionBarSize(activity));
+
+                writeScreenValue(activity);
+
+                float start = -(Jwc.getWindowHeight(activity) - Jwc.getPix(activity, 50));
+//                float start = -(Jwc.getWindowHeight(activity) - another);
+//                float start = -(getScreenHeight(activity)-getStatusBarSizeOnCreate(activity));
+
                 float end = 0f;
                 log_layout.setY(start);
                 activity.addContentView(log_layout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -154,6 +174,90 @@ public class BaseApplication extends Application {
     }
     public ScrollView getLogScrollView(Activity acitivity) {
         return (ScrollView) acitivity.findViewById(R.id.log_scrollView);
+    }
+
+
+    public static int getNavigationBarHeight(Activity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            DisplayMetrics metrics = new DisplayMetrics();
+            activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            int usableHeight = metrics.heightPixels;
+            activity.getWindowManager().getDefaultDisplay().getRealMetrics(metrics);
+            int realHeight = metrics.heightPixels;
+            if (realHeight > usableHeight)
+                return realHeight - usableHeight;
+            else
+                return 0;
+        }
+        return 0;
+    }
+
+    private int getStatusBarSizeOnCreate(Activity activity){
+        int statusBarHeight = 0;
+        int resourceId = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = activity.getResources().getDimensionPixelSize(resourceId);
+        }
+        return statusBarHeight;
+    }
+
+    private int getActionBarSize(Activity activity){
+        int actionBarHeight = 0;
+        final TypedArray styledAttributes = activity.getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize }
+        );
+        actionBarHeight = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
+
+        return actionBarHeight;
+    }
+
+    private int getScreenHeight(Activity activity){
+        int screenHeight = 0;
+
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        screenHeight = metrics.heightPixels;
+
+        return screenHeight;
+    }
+
+    private void writeScreenValue(Activity activity){
+
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        String displayName = display.getName();  // minSdkVersion=17+
+        Log.i("displayName  = " + displayName);
+
+// display size in pixels
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        Log.i("width        = " + width);
+        Log.i("height       = " + height);
+
+// pixels, dpi
+        DisplayMetrics metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int heightPixels = metrics.heightPixels;
+        int widthPixels = metrics.widthPixels;
+        int densityDpi = metrics.densityDpi;
+        float xdpi = metrics.xdpi;
+        float ydpi = metrics.ydpi;
+        Log.i("widthPixels  = " + widthPixels);
+        Log.i("heightPixels = " + heightPixels);
+        Log.i("densityDpi   = " + densityDpi);
+        Log.i("xdpi         = " + xdpi);
+        Log.i("ydpi         = " + ydpi);
+
+// deprecated
+        int screenHeight = display.getHeight();
+        int screenWidth = display.getWidth();
+        Log.i("screenHeight = " + screenHeight);
+        Log.i("screenWidth  = " + screenWidth);
+
+// orientation (either ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT)
+        int orientation = getResources().getConfiguration().orientation;
+        Log.i("orientation  = " + orientation);
     }
 
 

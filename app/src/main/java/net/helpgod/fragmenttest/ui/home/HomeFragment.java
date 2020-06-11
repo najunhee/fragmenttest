@@ -34,6 +34,8 @@ public class HomeFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        Log.d("HomeFragment onCreateView");
+
         mHandler = new MyMassgeHandler();
 
         view.findViewById(R.id.button_first).setOnClickListener(new View.OnClickListener() {
@@ -59,28 +61,13 @@ public class HomeFragment extends BaseFragment {
                     mHandler.sendEmptyMessageDelayed(NH_THREAD_MESSAGE_APPCLOSETIME, 1000 * 2);
                     // 2초 후에 handleMessage에 메시지를 전달한다.
                 } else {
-//                    activity.onBackPressed();
+//                  //App 종료처리.
                     ((MainActivity)activity).finishApp();
                 }
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, callback);
     }
-
-    //    @Override
-//    public synchronized void onBackPressed() {
-//        Log.d("### OnBackPressed  시작");
-//
-//        if (!checkFinish) {
-//            showToast(getString(R.string.destory_app_message));
-//            checkFinish = true;
-//            mHandler.sendEmptyMessageDelayed(NH_THREAD_MESSAGE_APPCLOSETIME, 1000 * 2);
-//            // 2초 후에 handleMessage에 메시지를 전달한다.
-//        } else {
-//            activity.onBackPressed();
-//        }
-//
-//    }
 
     /**
      * Handler 클래스
